@@ -5,8 +5,8 @@ COPY . /root
 WORKDIR /root
 
 # Installs additional packages
-RUN pip3 install .
 RUN pip3 uninstall -y google-cloud-aiplatform
 RUN pip3 install google-cloud-aiplatform tabulate
 RUN pip3 install google-cloud-aiplatform-$SDK_VERSION.tar.gz
+RUN pip3 install .
 
