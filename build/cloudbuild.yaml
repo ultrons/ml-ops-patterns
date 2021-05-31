@@ -1,0 +1,12 @@
+steps:
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: [ 'cp', '-r', 'gs://automl-samples/forecasting/v0.1/google-cloud-aiplatform-${_SDK_VERSION}.tar.gz',  '.' ]
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', 
+          '--build-arg', 'SDK_VERSION=${_SDK_VERSION}', 
+          '-t', 'gcr.io/${PROJECT_ID}/test-custom-container', 
+          '-f', './build/Dockerfile' , '.' ]
+substitutions:
+    _SDK_VERSION: 0.6.0
+images: ['gcr.io/${PROJECT_ID}/test-custom-container']
+
