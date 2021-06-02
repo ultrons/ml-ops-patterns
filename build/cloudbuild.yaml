@@ -5,8 +5,18 @@ steps:
   args: [ 'build', 
           '--build-arg', 'SDK_VERSION=${_SDK_VERSION}', 
           '-t', 'gcr.io/${PROJECT_ID}/test-custom-container', 
-          '-f', './build/Dockerfile' , '.' ]
+          '-f', './build/base_Dockerfile' , '.' ]
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', 
+          '--build-arg', 'SDK_VERSION=${_SDK_VERSION}', 
+          '-t', 'gcr.io/${PROJECT_ID}/test-custom-container', 
+          '-f', './build/trainer_Dockerfile' , '.' ]
+- name: 'gcr.io/${PROJECT_ID}/test-custom-container'
+  args: [ 'python', 
+          'view_demo/pipelines/pipeline.py' ]
 substitutions:
     _SDK_VERSION: 0.6.0
-images: ['gcr.io/${PROJECT_ID}/test-custom-container']
+images: [
+    'gcr.io/${PROJECT_ID}/test-custom-container',
+    'gcr.io/${PROJECT_ID}/test-custom-trainer']
 

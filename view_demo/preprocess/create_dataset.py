@@ -42,10 +42,10 @@ def create_dataset(
 
     # Rename Columns to comply with BQ
     df.rename(columns={
-        'p (mbar)': 'p__mbar', 
+        'p (mbar)': 'p__mbar',
         'T (degC)': 'T__degC',
-        'Tpot (K)': 'Tpot__K', 
-        'Tdew (degC)': 'Tdew__degC', 
+        'Tpot (K)': 'Tpot__K',
+        'Tdew (degC)': 'Tdew__degC',
         'rh (%)': 'rh__percent',
         'VPmax (mbar)': 'VPmax__mbar' ,
         'VPact (mbar)': 'VPact__mbar',
@@ -54,10 +54,10 @@ def create_dataset(
         'H2OC (mmol/mol)': 'H2OC__mmol_per_mol',
         'rho (g/m**3)': 'rho__gm_per_cubic_m',
         'max Wx': 'max_Wx',
-        'max Wy': 'max_Wy', 
-        'Day sin': 'Day_sin', 
-        'Day cos': 'Day_cos', 
-        'Year sin': 'Year_sin', 
+        'max Wy': 'max_Wy',
+        'Day sin': 'Day_sin',
+        'Day cos': 'Day_cos',
+        'Year sin': 'Year_sin',
         'Year cos': 'Year_cos',
         'Date Time': 'Date_Time',
         'wv (m/s)' : 'wv__m_per_s',
@@ -65,7 +65,7 @@ def create_dataset(
         'wd (deg)': 'wd__deg'
 
     }, inplace=True)
-    
+
     # Write to BQ
     client = bigquery.Client(location="us-central1", project=project_id)
     print("Client creating using default project: {}".format(client.project))
@@ -89,8 +89,8 @@ def create_dataset(
     job = client.load_table_from_dataframe(df, table_ref, location="us-central1")
     job.result()  # Waits for table load to complete.
     print("Loaded dataframe to {}".format(table_ref.path))
-    
-    return table_ref
+
+    return table_ref.path
 
 
 if __name__ == '__main__':
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset-id', dest='dataset_id',
                         default="view_dataset", type=str, help='Name of the BQ Dataset where preprocessed data will be pushed')
     parser.add_argument('--table-id', dest='table_id',
-                        default="weather_time_series", type=str, help='Name of the table under' 
+                        default="weather_time_series", type=str, help='Name of the table under'
                         'the BQ Dataset where preprocessed data will be pushed')
     args = parser.parse_args()
 
@@ -113,4 +113,4 @@ if __name__ == '__main__':
     table_id = args.table_id
     project_id = args.project_id
     create_dataset(csv_path, project_id, dataset_id ,table_id)
-    
+

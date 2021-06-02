@@ -1,0 +1,4 @@
+FROM gcr.io/pytorch-tpu-nfs/test-custom-container:latest
+RUN pip install --upgrade google-cloud-aiplatform
+
+ENTRYPOINT [ "python", "view_demo/train/custom_tf_trainer.py" ] 
