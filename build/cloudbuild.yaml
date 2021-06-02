@@ -8,7 +8,6 @@ steps:
           '-f', './build/base_Dockerfile' , '.' ]
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', 
-          '--build-arg', 'SDK_VERSION=${_SDK_VERSION}', 
           '-t', 'gcr.io/${PROJECT_ID}/test-custom-trainer', 
           '-f', './build/trainer_Dockerfile' , '.' ]
 - name: 'gcr.io/${PROJECT_ID}/test-custom-container'
