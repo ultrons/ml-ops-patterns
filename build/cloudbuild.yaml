@@ -12,7 +12,6 @@ steps:
           '-f', './build/trainer_Dockerfile' , '.' ]
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'run',
-          '-it',
           'gcr.io/${PROJECT_ID}/test-custom-container',
           'python',
           'view_demo/pipeline/custom-training.py']
