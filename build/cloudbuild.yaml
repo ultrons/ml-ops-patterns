@@ -10,9 +10,8 @@ steps:
   args: [ 'build', 
           '-t', 'gcr.io/${PROJECT_ID}/test-custom-trainer', 
           '-f', './build/trainer_Dockerfile' , '.' ]
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'run',
-          'gcr.io/${PROJECT_ID}/test-custom-container',
+- name: 'gcr.io/${PROJECT_ID}/test-custom-container'
+  args: [ 
           'python',
           'view_demo/pipeline/custom-training.py']
 substitutions:
