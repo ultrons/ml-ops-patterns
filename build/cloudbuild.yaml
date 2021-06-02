@@ -6,11 +6,13 @@ steps:
           '--build-arg', 'SDK_VERSION=${_SDK_VERSION}', 
           '-t', 'gcr.io/${PROJECT_ID}/test-custom-container', 
           '-f', './build/base_Dockerfile' , '.' ]
+
 images: [ 'gcr.io/${PROJECT_ID}/test-custom-container' ]
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', 
           '-t', 'gcr.io/${PROJECT_ID}/test-custom-trainer', 
           '-f', './build/trainer_Dockerfile' , '.' ]
+
 images: [ 'gcr.io/${PROJECT_ID}/test-custom-trainer' ]
 - name: 'gcr.io/${PROJECT_ID}/test-custom-container'
   args: [ 'python', 'view_demo/pipeline/custom-training.py' ]
