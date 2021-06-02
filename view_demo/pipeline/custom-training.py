@@ -186,7 +186,7 @@ if __name__ == '__main__':
         pipeline_root=PIPELINE_ROOT,
         enable_caching=False,
         parameter_values={
-            mae_cutoff=0.1
+            mae_cutoff:0.1
         },
     )
     from view_demo.utils.check_pipeline_status import check_pipeline_status
