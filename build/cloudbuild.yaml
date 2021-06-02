@@ -9,11 +9,11 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', 
           '--build-arg', 'SDK_VERSION=${_SDK_VERSION}', 
-          '-t', 'gcr.io/${PROJECT_ID}/test-custom-container', 
+          '-t', 'gcr.io/${PROJECT_ID}/test-custom-trainer', 
           '-f', './build/trainer_Dockerfile' , '.' ]
 - name: 'gcr.io/${PROJECT_ID}/test-custom-container'
   args: [ 'python', 
-          'view_demo/pipelines/pipeline.py' ]
+          'view_demo/pipeline/custom-training.py']
 substitutions:
     _SDK_VERSION: 0.6.0
 images: [

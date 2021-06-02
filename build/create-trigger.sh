@@ -7,7 +7,7 @@
 # Then, change the repo-owner to be your GitHub id
 
 REPO_NAME=ml-ops-patterns
-REPO_OWNER=sivaibhav
+REPO_OWNER=ultrons
 
 #for trigger_name in trigger-000 trigger-001 trigger-002 trigger-003; do
 #  gcloud beta builds triggers delete --quiet $trigger_name

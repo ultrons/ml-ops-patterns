@@ -1,14 +1,8 @@
-name: View train
+name: Model to uri def
 inputs:
-- {name: project_id, type: String}
-- {name: input_dataset}
-- {name: experiment_prefix, type: String}
-- {name: staging_bucket, type: String, default: 'gs://automl-samples', optional: true}
-- {name: context_window, type: Integer, default: '24', optional: true}
-outputs:
-- {name: metrics, type: Metrics}
 - {name: model, type: Model}
-- {name: Output, type: Float}
+outputs:
+- {name: Output, type: String}
 implementation:
   container:
     image: gcr.io/pytorch-tpu-nfs/test-custom-container
@@ -810,60 +804,8 @@ implementation:
           self._write_executor_output(result)
 
 
-      def view_train(
-          project_id: str,
-          input_dataset_path: InputPath(),
-          metrics: Output[Metrics],
-          model: Output[Model],
-          experiment_prefix: str ,
-          staging_bucket: str = 'gs://automl-samples',
-          context_window: int = 24
-
-      ) -> float :
-          print(locals())
-          from google.cloud import aiplatform
-          from datetime import datetime
-          import logging
-          with open(input_dataset_path) as f:
-              logging.info(f"input_dataset is: {f.read()}")
-          # Create and experiment tag
-          TIMESTAMP = datetime.now().strftime("%Y%m%d%H%M%S")
-          experiment_id = experiment_prefix + TIMESTAMP
-          run_id = f'context-window-{context_window}'
-          # Init AI Platform
-          aiplatform.init(
-              project=project_id,
-              staging_bucket=staging_bucket,
-              experiment=experiment_id
-          )
-
-          # Define the custom training job
-          job = aiplatform.CustomContainerTrainingJob(
-              display_name="view-training",
-              container_uri='gcr.io/pytorch-tpu-nfs/test-custom-trainer:latest',
-              model_serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
-          )
-          logging.info(f"Type of experiment_id :{type(experiment_id)}")
-          logging.info(f"Type of staging_bucket :{type(staging_bucket)}")
-          logging.info(f"Type of context_window :{type(context_window)}")
-          model_obj = job.run(
-              replica_count=1,
-              model_display_name="temp-prediction",
-              args=[
-                  f'--experiment-id={experiment_id}',
-                  f'--staging-bucket={staging_bucket}',
-                  f'--context-window={context_window}'
-              ],
-              environment_variables={'AIP_MODEL_DIR': model.uri},
-              base_output_dir=os.path.dirname(model.uri)
-          )
-
-          metrics_df = aiplatform.get_experiment_df(experiment_id)
-          val_mae = metrics_df.loc[metrics_df['run_name'] == run_id]['metric.val_mae'].values[-1]
-          val_mae = float(val_mae)
-          metrics.log_metric('val_mae', val_mae)
-          logging.info(f"Mean Error is:{val_mae}")
-          return val_mae
+      def model_to_uri_def (model: Input[Model] ) -> str:
+              return model.uri
 
 
       def executor_main():
@@ -890,20 +832,8 @@ implementation:
     - --executor_input
     - {executorInput: null}
     - --function_to_execute
-    - view_train
-    - --project-id-output-path
-    - {inputValue: project_id}
-    - --input-dataset-output-path
-    - {inputPath: input_dataset}
-    - --experiment-prefix-output-path
-    - {inputValue: experiment_prefix}
-    - --staging-bucket-output-path
-    - {inputValue: staging_bucket}
-    - --context-window-output-path
-    - {inputValue: context_window}
-    - --metrics-output-path
-    - {outputPath: metrics}
+    - model_to_uri_def
     - --model-output-path
-    - {outputPath: model}
+    - {inputPath: model}
     - --Output
     - {outputPath: Output}
