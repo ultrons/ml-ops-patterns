@@ -85,8 +85,7 @@ def view_train(
     job = aiplatform.CustomContainerTrainingJob(
         display_name="view-training",
         container_uri='gcr.io/pytorch-tpu-nfs/test-custom-trainer:latest',
-        model_serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
-        tensorboard=tensorboard_inst
+        model_serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest"
     )
     logging.info(f"Type of experiment_id :{type(experiment_id)}")
     logging.info(f"Type of staging_bucket :{type(staging_bucket)}")
