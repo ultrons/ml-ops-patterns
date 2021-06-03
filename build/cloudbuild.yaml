@@ -13,7 +13,7 @@ steps:
 - name: 'gcr.io/${PROJECT_ID}/test-custom-container'
   args: [ 
           'python',
-          'view_demo/pipeline/custom-training.py']
+          'view_demo/pipeline/custom_training.py']
 substitutions:
     _SDK_VERSION: 0.6.0
 images: [
