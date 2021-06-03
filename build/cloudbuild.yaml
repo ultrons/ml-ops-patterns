@@ -19,4 +19,4 @@ substitutions:
 images: [
     'gcr.io/${PROJECT_ID}/test-custom-container',
     'gcr.io/${PROJECT_ID}/test-custom-trainer']
-
+timeout: 1800s
