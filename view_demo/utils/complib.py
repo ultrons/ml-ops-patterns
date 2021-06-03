@@ -28,7 +28,7 @@ class complib:
         # Utility component fail with the given message
         @component(
                 base_image=self.container_uri,
-                output_component_file=f'{self.src_root}/utils/fail_op.yaml',
+                # output_component_file=f'{self.src_root}/utils/fail_op.yaml',
 
         )
         def fail_op_def (message: str = "Metric is below threshhold"):
@@ -39,7 +39,7 @@ class complib:
         # Return URI fromo the model object
         @component(
                 base_image=self.container_uri,
-                output_component_file=f'{self.src_root}/utils/model_to_uri.yaml',
+               # output_component_file=f'{self.src_root}/utils/model_to_uri.yaml',
 
         )
         def model_to_uri_def (model: Input[Model] ) -> str:

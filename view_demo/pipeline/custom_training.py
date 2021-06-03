@@ -36,7 +36,7 @@ PIPELINE_ROOT = 'gs://automl-samples/pipelines/staging'
 ##### Preprocessing component
 @component(
     base_image=CONTAINER_URI,
-    output_component_file=f'{SRC_ROOT}/preprocess/preprocess.yaml',
+#    output_component_file=f'{SRC_ROOT}/preprocess/preprocess.yaml',
 )
 def view_preprocess(
     project_id: str,
@@ -51,7 +51,7 @@ def view_preprocess(
 ##### Custom Training component
 @component(
     base_image=CONTAINER_URI,
-    output_component_file=f'{SRC_ROOT}/train/train.yaml',
+  #  output_component_file=f'{SRC_ROOT}/train/train.yaml',
 )
 def view_train(
     project_id: str,
@@ -118,57 +118,57 @@ fail_op = complib.fail_op()
 model_to_uri = complib.model_to_uri()
 
 
-if __name__ == '__main__':
-    # Pipeline Definition
-    @dsl.pipeline(
-        name="view-test-pipeline",
-        pipeline_root=PIPELINE_ROOT,
+# Pipeline Definition
+@dsl.pipeline(
+    name="view-test-pipeline",
+    pipeline_root=PIPELINE_ROOT,
+)
+def view_pipeline(
+    project_id: str = PROJECT_ID,
+    raw_dataset: str = 'gs://bench-datasets/jena_climate_2009_2016.csv',
+    staging_bucket: str = 'gs://automl-samples',
+    mae_cutoff: float = 0.0,
+    model_display_name: str = 'forecast-custom',
+    context_window: int = 24,
+    experiment_prefix: str = 'weather-prediction-'
+):
+    preprocess_task = view_preprocess(
+        project_id=project_id,
+        raw_dataset=raw_dataset
     )
-    def view_pipeline(
-        project_id: str = PROJECT_ID,
-        raw_dataset: str = 'gs://bench-datasets/jena_climate_2009_2016.csv',
-        staging_bucket: str = 'gs://automl-samples',
-        mae_cutoff: float = 0.0,
-        model_display_name: str = 'forecast-custom',
-        context_window: int = 24,
-        experiment_prefix: str = 'weather-prediction-'
-    ):
-        preprocess_task = view_preprocess(
-            project_id=project_id,
-            raw_dataset=raw_dataset
+    train_task = view_train(
+        project_id=project_id,
+        input_dataset=preprocess_task.outputs["out_dataset"],
+        context_window=context_window,
+        experiment_prefix=experiment_prefix,
+        staging_bucket=staging_bucket
+    )
+    with dsl.Condition(train_task.outputs['output'] > mae_cutoff , name="mae_test"):
+        get_model_task = model_to_uri(train_task.outputs['model'])
+        model_upload_op = gcc_aip.ModelUploadOp(
+            project=project_id,
+            display_name=model_display_name,
+            artifact_uri=get_model_task.outputs['output'],
+            serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
+            serving_container_environment_variables={"NOT_USED": "NO_VALUE"},
         )
-        train_task = view_train(
-            project_id=project_id,
-            input_dataset=preprocess_task.outputs["out_dataset"],
-            context_window=context_window,
-            experiment_prefix=experiment_prefix,
-            staging_bucket=staging_bucket
+        model_upload_op.after(train_task)
+        endpoint_create_op = gcc_aip.EndpointCreateOp(
+            project=project_id,
+            display_name="pipelines-created-endpoint",
         )
-        with dsl.Condition(train_task.outputs['output'] > mae_cutoff , name="mae_test"):
-            get_model_task = model_to_uri(train_task.outputs['model'])
-            model_upload_op = gcc_aip.ModelUploadOp(
-                project=project_id,
-                display_name=model_display_name,
-                artifact_uri=get_model_task.outputs['output'],
-                serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
-                serving_container_environment_variables={"NOT_USED": "NO_VALUE"},
-            )
-            model_upload_op.after(train_task)
-            endpoint_create_op = gcc_aip.EndpointCreateOp(
-                project=project_id,
-                display_name="pipelines-created-endpoint",
-            )
-            model_deploy_op = gcc_aip.ModelDeployOp(  # noqa: F841
-                project=project_id,
-                endpoint=endpoint_create_op.outputs["endpoint"],
-                model=model_upload_op.outputs["model"],
-                deployed_model_display_name=model_display_name,
-                machine_type="n1-standard-4",
-            )
-        with dsl.Condition(train_task.outputs['output'] < mae_cutoff , name="Low_Quality"):
-            fail_task = fail_op()
+        model_deploy_op = gcc_aip.ModelDeployOp(  # noqa: F841
+            project=project_id,
+            endpoint=endpoint_create_op.outputs["endpoint"],
+            model=model_upload_op.outputs["model"],
+            deployed_model_display_name=model_display_name,
+            machine_type="n1-standard-4",
+        )
+    with dsl.Condition(train_task.outputs['output'] < mae_cutoff , name="Low_Quality"):
+        fail_task = fail_op()
 
 
+if __name__ == '__main__':
     # Compile Pipeline
     from kfp.v2 import compiler as v2compiler
     v2compiler.Compiler().compile(pipeline_func=view_pipeline,
