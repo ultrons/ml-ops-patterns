@@ -86,6 +86,7 @@ def view_train(
         display_name="view-training",
         container_uri='gcr.io/pytorch-tpu-nfs/test-custom-trainer:latest',
         model_serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
+        tensorboard=tensorboard_inst
     )
     logging.info(f"Type of experiment_id :{type(experiment_id)}")
     logging.info(f"Type of staging_bucket :{type(staging_bucket)}")
@@ -99,8 +100,7 @@ def view_train(
             f'--context-window={context_window}'
         ],
         environment_variables={'AIP_MODEL_DIR': model.uri},
-        base_output_dir=os.path.dirname(model.uri),
-        tensorboard=tensorboard_inst
+        base_output_dir=os.path.dirname(model.uri)
     )
 
     metrics_df = aiplatform.get_experiment_df(experiment_id)
