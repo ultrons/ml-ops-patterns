@@ -50,10 +50,11 @@ FROM  `{self.project_id}.{self.dataset_id}.{self.table_id}`
         model.compile(loss=tf.losses.MeanSquaredError(),
                       optimizer=tf.optimizers.Adam(),
                       metrics=[tf.metrics.MeanAbsoluteError()])
-
+        tb_log_dir = os.environ.get('AIP_TENSORBOARD_LOG_DIR', './tb-logs')
+        tb_callback = tf.keras.callbacks.TensorBoard(tb_log_dir, update_freq=1)
         history = model.fit(window.train, epochs=max_epoch,
                             validation_data=window.val,
-                            callbacks=[early_stopping])
+                            callbacks=[early_stopping, tb_callback])
         return history
 
 

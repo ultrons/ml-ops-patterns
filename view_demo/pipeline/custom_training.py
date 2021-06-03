@@ -60,7 +60,8 @@ def view_train(
     model: Output[Model],
     experiment_prefix: str ,
     staging_bucket: str = 'gs://automl-samples',
-    context_window: int = 24
+    context_window: int = 24,
+    tensorboard_inst: str = 'view-tensorboard'
 
 ) -> float :
     print(locals())
@@ -98,7 +99,8 @@ def view_train(
             f'--context-window={context_window}'
         ],
         environment_variables={'AIP_MODEL_DIR': model.uri},
-        base_output_dir=os.path.dirname(model.uri)
+        base_output_dir=os.path.dirname(model.uri),
+        tensorboard=tensorboard_inst
     )
 
     metrics_df = aiplatform.get_experiment_df(experiment_id)
@@ -130,7 +132,8 @@ def view_pipeline(
     mae_cutoff: float = 0.0,
     model_display_name: str = 'forecast-custom',
     context_window: int = 24,
-    experiment_prefix: str = 'weather-prediction-'
+    experiment_prefix: str = 'weather-prediction-',
+    tensorboard_inst: str = 'view-tensorboard'
 ):
     preprocess_task = view_preprocess(
         project_id=project_id,
@@ -141,7 +144,8 @@ def view_pipeline(
         input_dataset=preprocess_task.outputs["out_dataset"],
         context_window=context_window,
         experiment_prefix=experiment_prefix,
-        staging_bucket=staging_bucket
+        staging_bucket=staging_bucket,
+        tensorboard_inst=tensorboard_inst
     )
     with dsl.Condition(train_task.outputs['output'] > mae_cutoff , name="mae_test"):
         get_model_task = model_to_uri(train_task.outputs['model'])
@@ -152,7 +156,7 @@ def view_pipeline(
             serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
             serving_container_environment_variables={"NOT_USED": "NO_VALUE"},
         )
-        model_upload_op.after(train_task)
+        #model_upload_op.after(train_task)
         endpoint_create_op = gcc_aip.EndpointCreateOp(
             project=project_id,
             display_name="pipelines-created-endpoint",
@@ -184,7 +188,7 @@ if __name__ == '__main__':
     result = api_client.create_run_from_job_spec(
         job_spec_path="view_pipeline_spec.json",
         pipeline_root=PIPELINE_ROOT,
-        enable_caching=False,
+        enable_caching=True,
         parameter_values={
             "mae_cutoff":0.1
         },
