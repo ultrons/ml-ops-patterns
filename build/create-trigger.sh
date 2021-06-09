@@ -16,6 +16,6 @@ REPO_OWNER=ultrons
 
 gcloud beta builds triggers create github \
   --build-config="./build/cloudbuild.yaml" \
-  --included-files="[view_demo/**, build/**]" \
-  --branch-pattern="^master$" \
+  --included-files="view_demo/**, build/**" \
+  --branch-pattern="^main$" \
   --repo-name=${REPO_NAME} --repo-owner=${REPO_OWNER}
