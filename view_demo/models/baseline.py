@@ -11,7 +11,8 @@ class BaseLineModel(tf.keras.Model):
 
   def call(self, inputs):
     x = self.preprocessing_layer(inputs)
+    print("Hello!")
     return self.dense1(x)
-    
+
 
 linear = BaseLineModel()
