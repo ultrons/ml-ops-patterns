@@ -26,16 +26,23 @@ from google_cloud_pipeline_components import aiplatform as gcc_aip
 import os
 
 ##### Run Parameters
-PROJECT_ID = 'pytorch-tpu-nfs'
-REGION = 'us-central1'
-CONTAINER_URI = 'gcr.io/pytorch-tpu-nfs/test-custom-container'
-SRC_DIR = os.path.dirname(__file__)
-SRC_ROOT = os.path.dirname(SRC_DIR)
-PIPELINE_ROOT = 'gs://automl-samples/pipelines/staging'
-
+from view_demo.utils import env_vars as evar
+PROJECT_ID = evar.PROJECT_ID
+DATASET_CSV = evar.DATASET_CSV
+REGION = evar.REGION
+BASE_IMAGE_URI = evar.BASE_IMAGE_URI
+BASE_TRAINING_IMAGE = evar.BASE_TRAINING_IMAGE
+SRC_ROOT = evar.SRC_ROOT
+PIPELINE_ROOT = evar.PIPELINE_ROOT
+STAGING_BUCKET = evar.STAGING_BUCKET
+TENSORBOARD_INST = evar.TENSOR_BOARD_INST
+TF_SERVING_IMAGE = evar.TF_SERVING_IMAGE
 ##### Preprocessing component
+# Note: Output component file is commented out
+# To allow execution of this code on cloud function where
+# Source dir is READONLY
 @component(
-    base_image=CONTAINER_URI,
+    base_image=BASE_IMAGE_URI,
 #    output_component_file=f'{SRC_ROOT}/preprocess/preprocess.yaml',
 )
 def view_preprocess(
@@ -59,12 +66,11 @@ def view_train(
     metrics: Output[Metrics],
     model: Output[Model],
     experiment_prefix: str ,
-    staging_bucket: str = 'gs://automl-samples',
+    staging_bucket: str = STAGING_BUCKET,
     context_window: int = 24,
-    tensorboard_inst: str = 'view-tensorboard'
+    tensorboard_inst: str = TENSORBOARD_INST
 
 ) -> float :
-    print(locals())
     from google.cloud import aiplatform
     from datetime import datetime
     import logging
@@ -84,8 +90,8 @@ def view_train(
     # Define the custom training job
     job = aiplatform.CustomContainerTrainingJob(
         display_name="view-training",
-        container_uri='gcr.io/pytorch-tpu-nfs/test-custom-trainer:latest',
-        model_serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest"
+        container_uri= BASE_TRAINING_IMAGE,
+        model_serving_container_image_uri=TF_SERVING_IMAGE
     )
     logging.info(f"Type of experiment_id :{type(experiment_id)}")
     logging.info(f"Type of staging_bucket :{type(staging_bucket)}")
@@ -126,13 +132,13 @@ model_to_uri = complib.model_to_uri()
 )
 def view_pipeline(
     project_id: str = PROJECT_ID,
-    raw_dataset: str = 'gs://bench-datasets/jena_climate_2009_2016.csv',
-    staging_bucket: str = 'gs://automl-samples',
-    mae_cutoff: float = 0.0,
+    raw_dataset: str = DATASET_CSV,
+    staging_bucket: str = STAGING_BUCKET,
+    mae_cutoff: float = 5.0,
     model_display_name: str = 'forecast-custom',
     context_window: int = 24,
     experiment_prefix: str = 'weather-prediction-',
-    tensorboard_inst: str = 'view-tensorboard'
+    tensorboard_inst: str = TENSORBOARD_INST
 ):
     preprocess_task = view_preprocess(
         project_id=project_id,
@@ -146,13 +152,13 @@ def view_pipeline(
         staging_bucket=staging_bucket,
         tensorboard_inst=tensorboard_inst
     )
-    with dsl.Condition(train_task.outputs['output'] > mae_cutoff , name="mae_test"):
+    with dsl.Condition(train_task.outputs['output'] < mae_cutoff , name="mae_test"):
         get_model_task = model_to_uri(train_task.outputs['model'])
         model_upload_op = gcc_aip.ModelUploadOp(
             project=project_id,
             display_name=model_display_name,
             artifact_uri=get_model_task.outputs['output'],
-            serving_container_image_uri="gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest",
+            serving_container_image_uri=TF_SERVING_IMAGE,
             serving_container_environment_variables={"NOT_USED": "NO_VALUE"},
         )
         #model_upload_op.after(train_task)
@@ -167,7 +173,7 @@ def view_pipeline(
             deployed_model_display_name=model_display_name,
             machine_type="n1-standard-4",
         )
-    with dsl.Condition(train_task.outputs['output'] < mae_cutoff , name="Low_Quality"):
+    with dsl.Condition(train_task.outputs['output'] > mae_cutoff , name="Low_Quality"):
         fail_task = fail_op()
 
 
@@ -189,7 +195,7 @@ if __name__ == '__main__':
         pipeline_root=PIPELINE_ROOT,
         enable_caching=True,
         parameter_values={
-            "mae_cutoff":0.1
+            "mae_cutoff":3.1
         },
     )
     from view_demo.utils.check_pipeline_status import check_pipeline_status
