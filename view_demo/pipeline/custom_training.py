@@ -68,7 +68,9 @@ def view_train(
     experiment_prefix: str ,
     staging_bucket: str ,
     context_window: int ,
-    tensorboard_inst: str
+    tensorboard_inst: str,
+    base_training_image: str
+
 
 ) -> float :
     from google.cloud import aiplatform
@@ -90,7 +92,7 @@ def view_train(
     # Define the custom training job
     job = aiplatform.CustomContainerTrainingJob(
         display_name="view-training",
-        container_uri= BASE_TRAINING_IMAGE,
+        container_uri= base_training_image,
         model_serving_container_image_uri=TF_SERVING_IMAGE
     )
     logging.info(f"Type of experiment_id :{type(experiment_id)}")
@@ -138,7 +140,8 @@ def view_pipeline(
     model_display_name: str = 'forecast-custom',
     context_window: int = 24,
     experiment_prefix: str = 'weather-prediction-',
-    tensorboard_inst: str = TENSORBOARD_INST
+    tensorboard_inst: str = TENSORBOARD_INSTi,
+    base_training_image: str = BASE_TRAINING_IMAGE
 ):
     preprocess_task = view_preprocess(
         project_id=project_id,
@@ -150,7 +153,8 @@ def view_pipeline(
         context_window=context_window,
         experiment_prefix=experiment_prefix,
         staging_bucket=staging_bucket,
-        tensorboard_inst=tensorboard_inst
+        tensorboard_inst=tensorboard_insti,
+        base_training_image=base_training_image
     )
     with dsl.Condition(train_task.outputs['output'] < mae_cutoff , name="mae_test"):
         get_model_task = model_to_uri(train_task.outputs['model'])
