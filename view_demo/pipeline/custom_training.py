@@ -66,9 +66,9 @@ def view_train(
     metrics: Output[Metrics],
     model: Output[Model],
     experiment_prefix: str ,
-    staging_bucket: str = STAGING_BUCKET,
-    context_window: int = 24,
-    tensorboard_inst: str = TENSORBOARD_INST
+    staging_bucket: str ,
+    context_window: int ,
+    tensorboard_inst: str
 
 ) -> float :
     from google.cloud import aiplatform
