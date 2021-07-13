@@ -140,7 +140,7 @@ def view_pipeline(
     model_display_name: str = 'forecast-custom',
     context_window: int = 24,
     experiment_prefix: str = 'weather-prediction-',
-    tensorboard_inst: str = TENSORBOARD_INSTi,
+    tensorboard_inst: str = TENSORBOARD_INST,
     base_training_image: str = BASE_TRAINING_IMAGE
 ):
     preprocess_task = view_preprocess(
@@ -153,7 +153,7 @@ def view_pipeline(
         context_window=context_window,
         experiment_prefix=experiment_prefix,
         staging_bucket=staging_bucket,
-        tensorboard_inst=tensorboard_insti,
+        tensorboard_inst=tensorboard_inst,
         base_training_image=base_training_image
     )
     with dsl.Condition(train_task.outputs['output'] < mae_cutoff , name="mae_test"):
