@@ -43,7 +43,7 @@ TF_SERVING_IMAGE = evar.TF_SERVING_IMAGE
 # Source dir is READONLY
 @component(
     base_image=BASE_IMAGE_URI,
-#    output_component_file=f'{SRC_ROOT}/preprocess/preprocess.yaml',
+    #output_component_file=f'{SRC_ROOT}/preprocess/preprocess.yaml',
 )
 def view_preprocess(
     project_id: str,
@@ -57,7 +57,7 @@ def view_preprocess(
 
 ##### Custom Training component
 @component(
-    base_image=CONTAINER_URI,
+    base_image=BASE_IMAGE_URI,
   #  output_component_file=f'{SRC_ROOT}/train/train.yaml',
 )
 def view_train(
@@ -118,7 +118,7 @@ def view_train(
 # Showvase component organization
 # only depicted for the utility components
 from view_demo.utils import complib
-complib = complib(CONTAINER_URI, SRC_ROOT)
+complib = complib(BASE_IMAGE_URI, SRC_ROOT)
 # Fail Op Component
 fail_op = complib.fail_op()
 # Component to extract model path(URI) from model object
