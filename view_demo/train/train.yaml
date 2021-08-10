@@ -3,7 +3,7 @@ inputs:
 - {name: project_id, type: String}
 - {name: input_dataset}
 - {name: experiment_prefix, type: String}
-- {name: staging_bucket, type: String, default: 'gs://automl-samples', optional: true}
+- {name: staging_bucket, type: String}
 - {name: context_window, type: Integer, default: '24', optional: true}
 outputs:
 - {name: metrics, type: Metrics}
@@ -366,16 +366,16 @@ implementation:
       \    self._write_executor_output(result)\n\n\ndef view_train(\n    project_id:\
       \ str,\n    input_dataset_path: InputPath(),\n    metrics: Output[Metrics],\n\
       \    model: Output[Model],\n    experiment_prefix: str ,\n    staging_bucket:\
-      \ str = 'gs://automl-samples',\n    context_window: int = 24\n\n) -> float :\n\
-      \    print(locals())\n    from google.cloud import aiplatform\n    from datetime\
-      \ import datetime\n    import logging\n    with open(input_dataset_path) as\
-      \ f:\n        logging.info(f\"input_dataset is: {f.read()}\")\n    # Create\
-      \ and experiment tag\n    TIMESTAMP = datetime.now().strftime(\"%Y%m%d%H%M%S\"\
-      )\n    experiment_id = experiment_prefix + TIMESTAMP\n    run_id = f'context-window-{context_window}'\n\
-      \    # Init AI Platform\n    aiplatform.init(\n        project=project_id,\n\
-      \        staging_bucket=staging_bucket,\n        experiment=experiment_id\n\
-      \    )\n\n    # Define the custom training job\n    job = aiplatform.CustomContainerTrainingJob(\n\
-      \        display_name=\"view-training\",\n        container_uri='gcr.io/pytorch-tpu-nfs/test-custom-trainer:latest',\n\
+      \ str ,\n    context_window: int = 24\n\n) -> float :\n    print(locals())\n\
+      \    from google.cloud import aiplatform\n    from datetime import datetime\n\
+      \    import logging\n    with open(input_dataset_path) as f:\n        logging.info(f\"\
+      input_dataset is: {f.read()}\")\n    # Create and experiment tag\n    TIMESTAMP\
+      \ = datetime.now().strftime(\"%Y%m%d%H%M%S\")\n    experiment_id = experiment_prefix\
+      \ + TIMESTAMP\n    run_id = f'context-window-{context_window}'\n    # Init AI\
+      \ Platform\n    aiplatform.init(\n        project=project_id,\n        staging_bucket=staging_bucket,\n\
+      \        experiment=experiment_id\n    )\n\n    # Define the custom training\
+      \ job\n    job = aiplatform.CustomContainerTrainingJob(\n        display_name=\"\
+      view-training\",\n        container_uri='gcr.io/pytorch-tpu-nfs/test-custom-trainer:latest',\n\
       \        model_serving_container_image_uri=\"gcr.io/cloud-aiplatform/prediction/tf2-cpu.2-2:latest\"\
       ,\n    )\n    logging.info(f\"Type of experiment_id :{type(experiment_id)}\"\
       )\n    logging.info(f\"Type of staging_bucket :{type(staging_bucket)}\")\n \
