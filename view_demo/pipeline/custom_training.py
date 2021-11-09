@@ -62,7 +62,7 @@ def view_preprocess(
 )
 def view_train(
     project_id: str,
-    input_dataset_path: InputPath(),
+    input_dataset: InputPath(),
     metrics: Output[Metrics],
     model: Output[Model],
     experiment_prefix: str ,
@@ -77,7 +77,7 @@ def view_train(
     from google.cloud import aiplatform
     from datetime import datetime
     import logging
-    with open(input_dataset_path) as f:
+    with open(input_dataset) as f:
         logging.info(f"input_dataset is: {f.read()}")
     # Create and experiment tag
     TIMESTAMP = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -151,7 +151,7 @@ def view_pipeline(
     )
     train_task = view_train(
         project_id=project_id,
-        input_dataset_path=preprocess_task.outputs["out_dataset"],
+        input_dataset=preprocess_task.outputs["out_dataset"],
         context_window=context_window,
         experiment_prefix=experiment_prefix,
         staging_bucket=staging_bucket,
