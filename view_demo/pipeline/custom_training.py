@@ -151,7 +151,7 @@ def view_pipeline(
     )
     train_task = view_train(
         project_id=project_id,
-        input_dataset=preprocess_task.outputs["out_dataset"],
+        input_dataset_path=preprocess_task.outputs["out_dataset"],
         context_window=context_window,
         experiment_prefix=experiment_prefix,
         staging_bucket=staging_bucket,
