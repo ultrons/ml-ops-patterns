@@ -8,9 +8,9 @@ WORKDIR /root
 #RUN pip3 uninstall -y google-cloud-aiplatform
 #RUN pip3 install google-cloud-aiplatform tabulate
 #RUN pip3 install google-cloud-aiplatform-$SDK_VERSION.tar.gz
-RUN pip install --upgrade google-cloud-aiplatform
+RUN pip install --upgrade google-cloud-aiplatform==1.4.2
 RUN pip install kfp==1.6.2
 RUN pip install kfp-pipeline-spec==0.1.7 kfp-server-api==1.4.0rc1
-RUN pip install google_cloud_pipeline_components
+RUN pip install google_cloud_pipeline_components==0.1.1
 RUN pip3 install .
 
